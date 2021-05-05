@@ -8,7 +8,6 @@ def calc_pdf(x , mu, sig) -> float:
     return result  
     
 def NB(training_data: list, test: list) -> None:
-    
     ncol = len(training_data[0])
     yes_sum = [0]*(ncol-1)
     no_sum=[0]*(ncol-1)
@@ -18,11 +17,11 @@ def NB(training_data: list, test: list) -> None:
     for rows in training_data:
         if rows[ncol-1] == "yes":       #if last column is "yes"
             for i in range(ncol-1):     #range of ncol-1
-                yes_sum[i] += float(rows[i])
+                yes_sum[i] += rows[i]
             num_yes += 1
         if rows[ncol-1] == "no":
             for i in range(ncol-1):
-                no_sum[i] += float(rows[i])
+                no_sum[i] += rows[i]
             num_no += 1
         num_examples += 1
 
@@ -43,10 +42,10 @@ def NB(training_data: list, test: list) -> None:
     for rows in training_data:
         if rows[ncol-1] == "yes":               #if last column is "yes"
             for i in range(ncol-1):             #range of ncol-1
-                yes_dev[i] += (float(rows[i]) - yes_means[i])**2
+                yes_dev[i] += (rows[i] - yes_means[i])**2
         if rows[ncol-1] == "no":
             for i in range(ncol-1):
-                no_dev[i] += (float(rows[i]) - no_means[i])**2
+                no_dev[i] += (rows[i] - no_means[i])**2
 
     #ATTR STDDEV
     yes_stddev = [math.sqrt(x / (num_yes-1)) for x in yes_dev]
@@ -56,54 +55,57 @@ def NB(training_data: list, test: list) -> None:
         resultYes = 1
         resultNo = 1
         for index in range(len(t)):
-            print(t[index])
-            #resultYes *= calc_pdf(float(t[index]), yes_means[index], yes_stddev[index])
-            #resultNo *= calc_pdf(float(t[index]), no_means[index], no_stddev[index])
+            resultYes *= calc_pdf(t[index], yes_means[index], yes_stddev[index])
+            resultNo *= calc_pdf(t[index], no_means[index], no_stddev[index])
         resultYes *= pYes
         resultNo *= pNo
 
         #ONLY NEED TO COMPARE NUMERATOR
-        """
         if resultYes >= resultNo:
             print("yes")
         else:
             print("no")
-        """
+        
 
-#TODO  
 def main(args: list) -> None:       
 
-    arguments = ["pima.csv" , "test.csv" , "NB"]
+    if len(args) != 3:
+        print("Usage: MyClassifier.py <Path_to_training> <Path_to_test> <Algorithm Type>")
+        sys.exit()
     training_data = []
     test_data = []
 
     #PARSES TRAINING SET INTO 2D ARRAY "training_data"
-    with open(arguments[0]) as training_file:
+    with open(args[0]) as training_file:
         training_reader = csv.reader(training_file, delimiter = ",")
-        ncol = len(next(training_reader))
-        training_file.seek(0)
+        ncol = len(next(training_reader))               #Reads the first line and counts number of cols
+        training_file.seek(0)                           #Goes back to the beginning of the file
 
         for row in training_reader:
             training_data_row = []
-            for item in row:
-                training_data_row.append(item)
+            for i in range(ncol-1):
+                training_data_row.append(float(row[i]))
+            training_data_row.append(row[ncol-1])
             training_data.append(training_data_row)
 
-    #PASSES TEST SET INTO 2D ARRAY "test_data"
-    with open(arguments[1]) as test_file:
+    #PARSES TEST SET INTO 2D ARRAY "test_data"
+    with open(args[1]) as test_file:
         test_reader = csv.reader(test_file, delimiter = ",")
-        ncol = len(next(test_reader))               #Reads the first line and counts number of cols
-        test_file.seek(0)                           #Goes back to the beginning of the file
 
         for row in test_reader:
             test_data_row = []
             for item in row:
-                test_data_row.append(item)
-            test_data.append(training_data_row)
+                test_data_row.append(float(item))
+            test_data.append(test_data_row)
 
-    if arguments[2] == "NB":
+    #RUN NB
+    if args[2] == "NB":
         NB(training_data , test_data)
         return
+
+
+    #TODO Heidi running KNN
+
 
     
 
