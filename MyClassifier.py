@@ -65,7 +65,43 @@ def NB(training_data: list, test: list) -> None:
             print("yes")
         else:
             print("no")
+
+def KNN(k: int, training_data: list, test_data: list) -> None:
+    #initialization
+    ncol = len(training_data[0]) 
+    
+    for test in test_data:
         
+        #create nested list(element = [edist,class])
+        edist_class = []
+        for train in training_data:
+            edist = 0
+            for i in range(ncol-1):
+                edist += (test[i]-train[i])**2
+            edist_class.append([math.sqrt(edist), train[-1]])
+        
+        #sort list according to edist
+        edist_class.sort(key = lambda x: x[0]) 
+        
+        #retrieve class of kth closest training example
+        kclass = [] 
+        for i in range(k):
+            kclass.append(edist_class[i][1])
+            
+        #count number of item in classes
+        num_yes = 0
+        num_no = 0
+        for item in kclass:
+            if item == "yes":
+                num_yes += 1
+            if item == "no":
+                num_no += 1
+        
+        #result
+        if num_yes >= num_no:
+            print("yes")
+        else:
+            print("no")
 
 def main(args: list) -> None:       
 
@@ -102,9 +138,12 @@ def main(args: list) -> None:
     if args[2] == "NB":
         NB(training_data , test_data)
         return
-
-
-    #TODO Heidi running KNN
+    
+    ##RUN KNN
+    if "NN" in args[2]:
+        k = int(args[2].replace("NN",""))
+        KNN(k, training_data , test_data)
+        return
 
 
     
