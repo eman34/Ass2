@@ -1,0 +1,7 @@
+Accuracies of our classifiers using 10-fold stratified CV on the "pima.csv" dataset is as follows:
+Naive Bayes: 0.7460526315789473
+1-Nearest-Neighbour: 0.6887218045112782
+2-Nearest-Neighbour: 0.7043916609706083
+3-Nearest-Neighbour: 0.7461038961038962
+4-Nearest-Neighbour: 0.7240088858509912
+5-Nearest-Neighbour: 0.7552631578947369

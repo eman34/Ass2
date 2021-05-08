@@ -10,45 +10,33 @@ def K_fold_strat(data: list, length: int) -> None:
 
     sorted_data = data
     sorted_data.sort(key = lambda x: x[-1] , reverse=True)
-    NB_accuracy_sum = 0
-    KNN_accuracy_sum = [0]*5
 
     with open("pima-folds.csv", "w+") as o:
         for i in range(10):
             o.write("fold{}\n".format(i+1))
 
-            training = []
-            test = []
-            for index in range(length):
-                if index % 10 == i:
-                    test.append(sorted_data[index])
-                    strings = (str(item) for item in sorted_data[index])
+            j = 0
+            while(1):
+                try:
+                    strings = (str(item) for item in sorted_data[i + 10*j])
                     s = ",".join(strings)
                     o.write(s + "\n")
-                else:
-                    training.append(sorted_data[index])
-            o.write("\n")
-            NB_accuracy_sum += NB(training , test, True)
-            KNN_accuracy_sum[0] += KNN(1,training, test, True)
-            KNN_accuracy_sum[1] += KNN(2,training, test, True)
-            KNN_accuracy_sum[2] += KNN(3,training, test, True)
-            KNN_accuracy_sum[3] += KNN(4,training, test, True)
-            KNN_accuracy_sum[4] += KNN(5,training, test, True)
+                    j += 1
+                except:
+                    o.write("\n")
+                    break
 
-    with open("eval.txt", "w+") as f:
-        f.write("Accuracies of our classifiers using 10-fold stratified CV on the \"pima.csv\" dataset is as follows:\n")
-        f.write("Naive Bayes: {}\n".format(NB_accuracy_sum/10))
-        f.write("1-Nearest-Neighbour: {}\n".format(KNN_accuracy_sum[0]/10))
-        f.write("2-Nearest-Neighbour: {}\n".format(KNN_accuracy_sum[1]/10))
-        f.write("3-Nearest-Neighbour: {}\n".format(KNN_accuracy_sum[2]/10))
-        f.write("4-Nearest-Neighbour: {}\n".format(KNN_accuracy_sum[3]/10))
-        f.write("5-Nearest-Neighbour: {}".format(KNN_accuracy_sum[4]/10))
+            
+
+
+
+
 
 def calc_pdf(x , mu, sig) -> float:
     result = 1.0/(sig*math.sqrt(2*math.pi)) * math.exp((-(x - mu)**2) / (2*sig**2)) 
     return result  
     
-def NB(training_data: list, test: list, test_has_class: bool) -> float:
+def NB(training_data: list, test: list) -> None:
     ncol = len(training_data[0])
     yes_sum = [0]*(ncol-1)
     no_sum=[0]*(ncol-1)
@@ -92,42 +80,25 @@ def NB(training_data: list, test: list, test_has_class: bool) -> float:
     yes_stddev = [math.sqrt(x / (num_yes-1)) for x in yes_dev]
     no_stddev = [math.sqrt(x / (num_no-1)) for x in no_dev]
 
-    num_correct = 0
-    num_wrong = 0
     for t in test:
         resultYes = 1
         resultNo = 1
-        for index in range(ncol - 1):
+        for index in range(len(t)):
             resultYes *= calc_pdf(t[index], yes_means[index], yes_stddev[index])
             resultNo *= calc_pdf(t[index], no_means[index], no_stddev[index])
         resultYes *= pYes
         resultNo *= pNo
 
         #ONLY NEED TO COMPARE NUMERATOR
-        if not (test_has_class):
-            if resultYes >= resultNo:
-                print("yes")
-            else:
-                print("no")
+        if resultYes >= resultNo:
+            print("yes")
         else:
-            if resultYes >= resultNo and t[-1] == "yes":
-                num_correct += 1
-            elif resultYes < resultNo and t[-1] == "no":
-                num_correct += 1
-            else:
-                num_wrong += 1
-    if not (test_has_class):
-        return 0
-    else:
-        return (float) (num_correct / (num_wrong + num_correct))
-     
-def KNN(k: int, training_data: list, test_data: list, test_has_class: bool) -> float:
+            print("no")
+        
+def KNN(k: int, training_data: list, test_data: list) -> None:
     #initialization
     ncol = len(training_data[0]) 
-
-
-    num_correct = 0
-    num_wrong = 0
+    
     for test in test_data:
         
         #create nested list(element = [edist,class])
@@ -156,23 +127,11 @@ def KNN(k: int, training_data: list, test_data: list, test_has_class: bool) -> f
                 num_no += 1
         
         #result
-        if not test_has_class:
-            if num_yes >= num_no:
-                print("yes")
-            else:
-                print("no")
+        if num_yes >= num_no:
+            print("yes")
         else:
-            if num_yes >= num_no and test[-1] == "yes":
-                num_correct += 1
-            elif num_yes < num_no and test[-1] == "no":
-                num_correct += 1
-            else:
-                num_wrong += 1
-    if not test_has_class:
-        return 0
-    else:
-        return (float) (num_correct / (num_wrong + num_correct))
-        
+            print("no")
+
 def main(args: list) -> None:       
 
     if len(args) != 3 and len(args) != 1:
@@ -228,14 +187,14 @@ def main(args: list) -> None:
 
         #RUN NB
         if args[2] == "NB":
-            NB(training_data , test_data, False)
+            NB(training_data , test_data)
             return
 
 
         #RUN KNN
         if "NN" in args[2]:
             k = int(args[2].replace("NN",""))
-            KNN(k, training_data , test_data, False)
+            KNN(k, training_data , test_data)
             return
 
 if __name__ == "__main__":
